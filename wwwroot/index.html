@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LawTest</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="app">
+        <div id="login">
+            <h2>Login</h2>
+            <input type="text" id="username" placeholder="Username">
+            <input type="password" id="password" placeholder="Password">
+            <button onclick="login()">Login</button>
+            <button onclick="showRegister()">Register</button>
+        </div>
+        <div id="register" style="display:none;">
+            <h2>Register</h2>
+            <input type="text" id="regUsername" placeholder="Username">
+            <input type="password" id="regPassword" placeholder="Password">
+            <button onclick="register()">Register</button>
+            <button onclick="showLogin()">Login</button>
+        </div>
+        <div id="main" style="display:none;">
+            <h2>Law Branches</h2>
+            <div id="lawBranches"></div>
+            <h2>Test Collections</h2>
+            <div id="testCollections"></div>
+            <h2>Test Questions</h2>
+            <div id="testQuestions"></div>
+            <h2>Submit Test</h2>
+            <button onclick="submitTest()">Submit Test</button>
+        </div>
+        <div id="createLawBranch" style="display:none;">
+            <h2>Create Law Branch</h2>
+            <input type="text" id="lawBranchName" placeholder="Law Branch Name">
+            <button onclick="createLawBranch()">Create Law Branch</button>
+        </div>
+        <div id="createTest" style="display:none;">
+            <h2>Create Test</h2>
+            <select id="lawBranchSelect"></select>
+            <input type="text" id="testCategory" placeholder="Test Category">
+            <input type="text" id="testSubCategory" placeholder="Test SubCategory">
+            <input type="text" id="testType" placeholder="Test Type">
+            <div id="questionsContainer"></div>
+            <button onclick="addQuestion()">Add Question</button>
+            <button onclick="createTest()">Create Test</button>
+        </div>
+    </div>
+    <script src="js/websocket.js"></script>
+</body>
+</html>
