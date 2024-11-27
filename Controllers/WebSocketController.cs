@@ -176,25 +176,39 @@ public class WebSocketController : ControllerBase
   {
     try
     {
-      var testCollectionId = json.GetProperty("testCollectionId").GetInt32();
-      var testQuestions = await _context.TestQuestions
-          .Where(tq => tq.TestCollectionId == testCollectionId)
-          .ToListAsync();
-      return JsonSerializer.Serialize(new
-      {
-        action = "get_test_questions",
-        status = "success",
-        questions = testQuestions
-      });
+        var testCollectionId = json.GetProperty("testCollectionId").GetInt32();
+        Console.WriteLine($"Getting questions for test collection ID: {testCollectionId}");
+
+        var testQuestions = await _context.Questions
+            .Where(q => q.TestId == testCollectionId)
+            .Select(q => new // Проецируем только нужные поля
+            {
+                q.Id,
+                q.Text,
+                q.Options,
+                q.CorrectAnswer,
+                q.TestId
+            })
+            .ToListAsync();
+
+        Console.WriteLine($"Found {testQuestions.Count} questions for test collection ID: {testCollectionId}");
+
+        return JsonSerializer.Serialize(new
+        {
+            action = "get_test_questions",
+            status = "success",
+            questions = testQuestions
+        });
     }
     catch (Exception ex)
     {
-      return JsonSerializer.Serialize(new
-      {
-        action = "get_test_questions",
-        status = "error",
-        message = ex.Message
-      });
+        Console.WriteLine($"Error getting test questions: {ex}");
+        return JsonSerializer.Serialize(new
+        {
+            action = "get_test_questions",
+            status = "error",
+            message = ex.Message
+        });
     }
   }
 
@@ -414,5 +428,12 @@ public class WebSocketController : ControllerBase
         message = ex.Message
       });
     }
+  }
+
+  public async Task<List<Test>> GetTestsByLawBranchIdAsync(int lawBranchId)
+  {
+      return await _context.Tests.Include(t => t.Questions)
+                                 .Where(t => t.LawBranchId == lawBranchId)
+                                 .ToListAsync();
   }
 }

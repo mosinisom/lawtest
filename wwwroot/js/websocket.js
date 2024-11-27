@@ -87,7 +87,6 @@ function handleRegister(data) {
   }
 }
 
-// Обновляем showMainPage
 function showMainPage() {
   document.getElementById("login").style.display = "none";
   document.getElementById("register").style.display = "none";
@@ -129,7 +128,6 @@ function renderLawBranches(branches) {
   });
 }
 function getTestCollections(lawBranchId) {
-    // Преобразуем в строку при отправке
     socket.send(JSON.stringify({ 
         action: "get_test_collections", 
         lawBranchId: lawBranchId.toString() 
@@ -142,18 +140,15 @@ function renderTestCollections(collections) {
     
     console.log("Rendering collections for law branch:", currentLawBranchId);
     
-    // Найдем или создадим контейнер для тестов для данной ветви права
     let lawBranchContainer = document.querySelector(`[data-law-branch-id="${currentLawBranchId}"]`);
     
     if (!lawBranchContainer) {
-        // Если контейнер не найден, добавим его в основной контейнер
         lawBranchContainer = document.createElement('div');
         lawBranchContainer.dataset.lawBranchId = currentLawBranchId;
         lawBranchContainer.className = 'law-branch-container';
         container.appendChild(lawBranchContainer);
     }
     
-    // Создаем или находим контейнер для тестов
     let testsContainer = lawBranchContainer.querySelector('.tests');
     if (!testsContainer) {
         testsContainer = document.createElement('div');
@@ -180,36 +175,109 @@ function renderTestCollections(collections) {
         testsContainer.appendChild(testElement);
     });
 
-    // Убедимся, что контейнер видим
     lawBranchContainer.style.display = 'block';
 }
 
-function getTestQuestions(testCollectionId) {
-  socket.send(JSON.stringify({ action: "get_test_questions", testCollectionId }));
+function getTestQuestions(testId) {
+    if (!testId) {
+        console.error("Invalid test ID:", testId);
+        return;
+    }
+    
+    console.log("Getting questions for test:", testId);
+    socket.send(JSON.stringify({ 
+        action: "get_test_questions", 
+        testCollectionId: testId 
+    }));
 }
 
-// Модифицируем рендеринг тестов
-function renderTestQuestions(questions) {
-  const container = document.getElementById("testContent");
-  container.innerHTML = "";
-  questions.forEach((question, index) => {
-    const div = document.createElement("div");
-    div.innerHTML = `
-        <p><strong>Question ${index + 1}:</strong> ${question.question}</p>
-        <input type="text" placeholder="Your answer">
+function renderTestQuestions(data) {
+    console.log("Received test questions data:", data);
+    
+    const mainContainer = document.getElementById("main");
+    const testForm = document.getElementById("testForm");
+    const container = document.getElementById("testContent");
+    
+    mainContainer.style.display = "none";
+    testForm.style.display = "block";
+    container.style.display = "block";
+    
+    container.innerHTML = "";
+    
+    const questions = Array.isArray(data) ? data : [data];
+    
+    const form = document.createElement("form");
+    form.id = "testQuestionsForm";
+    
+    questions.forEach((question, index) => {
+        const questionDiv = document.createElement("div");
+        questionDiv.className = "test-item";
+        
+        let optionsHtml = '';
+        if (Array.isArray(question.Options)) {
+            optionsHtml = question.Options.map((option, optIndex) => `
+                <div class="option">
+                    <input type="radio" 
+                           id="q${question.Id}_opt${optIndex}"
+                           name="question${question.Id}" 
+                           value="${option}">
+                    <label for="q${question.Id}_opt${optIndex}">${option}</label>
+                </div>
+            `).join('');
+        }
+
+        questionDiv.innerHTML = `
+            <div class="question">
+                <p class="question-text">
+                    <strong>Вопрос ${index + 1}:</strong> ${question.Text}
+                </p>
+                <div class="options-container">
+                    ${optionsHtml}
+                </div>
+            </div>
+        `;
+        
+        form.appendChild(questionDiv);
+    });
+
+    const buttonsDiv = document.createElement("div");
+    buttonsDiv.className = "test-buttons";
+    buttonsDiv.innerHTML = `
+        <button type="button" onclick="submitTest()">Отправить ответы</button>
+        <button type="button" onclick="closeTestForm()">Закрыть</button>
     `;
-    container.appendChild(div);
-  });
-  showTestForm(questions);
+    form.appendChild(buttonsDiv);
+
+    container.appendChild(form);
+}
+
+function closeTestForm() {
+    document.getElementById("main").style.display = "block";
+    document.getElementById("testForm").style.display = "none";
+    document.getElementById("testContent").style.display = "none";
 }
 
 function submitTest() {
-  const testId = 1; // Example test ID
-  const answers = Array.from(document.getElementById("testQuestionsContainer").children).map(div => {
-    const input = div.getElementsByTagName("input")[0];
-    return input.value;
-  });
-  socket.send(JSON.stringify({ action: "submit_test_answer", testId, answers }));
+    const questionsContainer = document.getElementById("testQuestionsContainer");
+    if (!questionsContainer) {
+        alert("Ошибка: контейнер с вопросами не найден");
+        return;
+    }
+
+    const answers = Array.from(questionsContainer.querySelectorAll('.question')).map(questionDiv => {
+        const selectedOption = questionDiv.querySelector('input[type="radio"]:checked');
+        return selectedOption ? selectedOption.value : '';
+    });
+
+    if (answers.some(answer => answer === '')) {
+        alert("Пожалуйста, ответьте на все вопросы");
+        return;
+    }
+
+    socket.send(JSON.stringify({ 
+        action: "submit_test_answer", 
+        answers: answers 
+    }));
 }
 
 function handleSubmitTest(data) {
@@ -225,7 +293,6 @@ function createLawBranch() {
   socket.send(JSON.stringify({ action: "create_law_branch", name }));
 }
 
-// Модифицируем обработчики создания
 function handleCreateLawBranch(data) {
   if (data.status === "success") {
     alert("Law branch created successfully!");
@@ -330,7 +397,6 @@ function createTest() {
     const testType = document.getElementById("testType").value;
     const lawBranchId = parseInt(document.getElementById("lawBranchSelect").value);
     
-    // Добавим отладочный вывод
     console.log("Creating test with:", {
         name,
         testType,
@@ -397,16 +463,14 @@ function createTest() {
         });
     });
 
-    // Проверим финальные данные перед отправкой
     console.log("Sending test data:", testData);
 
     socket.send(JSON.stringify({
         action: "create_test",
-        test: testData // Обернем в объект test для более четкой структуры
+        test: testData 
     }));
 }
 
-// Модифицируем обработчики создания
 function handleCreateTest(data) {
   if (data.status === "success") {
     alert("Test created successfully!");
@@ -417,7 +481,6 @@ function handleCreateTest(data) {
   }
 }
 
-// Добавим функции управления отображением
 function showCreateLawBranchForm() {
   document.getElementById("createLawBranch").style.display = "block";
 }
@@ -443,4 +506,38 @@ function showTestForm(testData) {
 function closeTestForm() {
   document.getElementById("testForm").style.display = "none";
   document.getElementById("main").style.display = "block";
+}
+
+function renderTestContent(questions) {
+    const container = document.getElementById("testContent");
+    container.innerHTML = '';
+    
+    const questionsContainer = document.createElement("div");
+    questionsContainer.id = "testQuestionsContainer";
+    
+    questions.forEach((question, index) => {
+        const questionDiv = document.createElement("div");
+        questionDiv.className = "question";
+        
+        let optionsHtml = '';
+        if (Array.isArray(question.Options)) {
+            optionsHtml = question.Options.map((option, optIndex) => `
+                <div class="option">
+                    <input type="radio" name="question${index}" value="${option}">
+                    <label>${option}</label>
+                </div>
+            `).join('');
+        }
+        
+        questionDiv.innerHTML = `
+            <p class="question-text"><strong>Вопрос ${index + 1}:</strong> ${question.Text}</p>
+            <div class="options-container">
+                ${optionsHtml}
+            </div>
+        `;
+        
+        questionsContainer.appendChild(questionDiv);
+    });
+    
+    container.appendChild(questionsContainer);
 }

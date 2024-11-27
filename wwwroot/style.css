@@ -203,3 +203,35 @@ button:hover {
     border-radius: 5px;
     box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
+
+.test-buttons {
+    margin-top: 20px;
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+}
+
+.test-buttons button {
+    width: auto;
+    padding: 10px 20px;
+}
+
+.question {
+    margin-bottom: 20px;
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+.question .options {
+    margin-top: 10px;
+}
+
+.option {
+    margin: 5px 0;
+}
+
+.option input[type="radio"] {
+    width: auto;
+    margin-right: 10px;
+}
