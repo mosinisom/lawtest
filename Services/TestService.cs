@@ -23,10 +23,10 @@ public class TestService : ITestService
                     .FirstOrDefaultAsync(t => t.Id == id);
     }
 
-    public async Task<List<Test>> GetTestsByCategoryAsync(string category)
+    public async Task<List<Test>> GetTestsByLawBranchIdAsync(int lawBranchId)
     {
         return await _context.Tests.Include(t => t.Questions)
-                                   .Where(t => t.Category == category)
+                                   .Where(t => t.LawBranchId == lawBranchId)
                                    .ToListAsync();
     }
 

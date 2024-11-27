@@ -23,29 +23,49 @@
             <button onclick="showLogin()">Login</button>
         </div>
         <div id="main" style="display:none;">
-            <h2>Law Branches</h2>
-            <div id="lawBranches"></div>
-            <h2>Test Collections</h2>
-            <div id="testCollections"></div>
-            <h2>Test Questions</h2>
-            <div id="testQuestions"></div>
-            <h2>Submit Test</h2>
+            <div class="controls">
+                <button onclick="showCreateLawBranchForm()">Create Law Branch</button>
+                <button onclick="showCreateTestForm()">Create Test</button>
+            </div>
+            <div class="content">
+                <h2>Law Branches</h2>
+                <div id="lawBranches"></div>
+            </div>
+        </div>
+        <div id="testForm" style="display:none;">
+            <h2>Test</h2>
+            <div id="testContent"></div>
             <button onclick="submitTest()">Submit Test</button>
+            <button onclick="closeTestForm()">Close</button>
         </div>
-        <div id="createLawBranch" style="display:none;">
-            <h2>Create Law Branch</h2>
-            <input type="text" id="lawBranchName" placeholder="Law Branch Name">
-            <button onclick="createLawBranch()">Create Law Branch</button>
+        <div id="createLawBranch" class="modal" style="display:none;">
+            <div class="modal-content">
+                <h2>Create Law Branch</h2>
+                <input type="text" id="lawBranchName" placeholder="Law Branch Name">
+                <div class="button-group">
+                    <button onclick="createLawBranch()">Create</button>
+                    <button onclick="closeCreateLawBranch()">Cancel</button>
+                </div>
+            </div>
         </div>
-        <div id="createTest" style="display:none;">
-            <h2>Create Test</h2>
-            <select id="lawBranchSelect"></select>
-            <input type="text" id="testCategory" placeholder="Test Category">
-            <input type="text" id="testSubCategory" placeholder="Test SubCategory">
-            <input type="text" id="testType" placeholder="Test Type">
-            <div id="questionsContainer"></div>
-            <button onclick="addQuestion()">Add Question</button>
-            <button onclick="createTest()">Create Test</button>
+        <div id="createTest" class="modal" style="display:none;">
+            <div class="modal-content">
+                <h2>Create Test</h2>
+                <select id="lawBranchSelect"></select>
+                <input type="text" id="testName" placeholder="Test Name">
+                <select id="testType">
+                    <option value="Matching">Matching</option>
+                    <option value="TrueFalse">True/False</option>
+                    <option value="SingleChoice">Single Choice</option>
+                    <option value="MultipleChoice">Multiple Choice</option>
+                </select>
+                <div id="questionsContainer"></div>
+                <div class="button-group">
+                    <button onclick="addQuestion()">Add Question</button>
+                    <button onclick="createTest()">Create</button>
+                    <button onclick="closeCreateTest()">Cancel</button>
+                </div>
+            </div>
         </div>
     </div>
     <script src="js/websocket.js"></script>
