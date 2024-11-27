@@ -1,3 +1,134 @@
+const tests = {
+    "Административное право": [
+        {
+            name: "Тест 1",
+            questions: [
+                {
+                    question: "Что регулирует административное право?",
+                    answers: ["Частные отношения", "Общественные отношения", "Международные отношения"],
+                    correct: 1,
+                },
+                {
+                    question: "Сколько разделов в Кодексе об административных правонарушениях?",
+                    answers: ["6", "10", "12"],
+                    correct: 2,
+                },
+                {
+                    question: "Какой орган имеет право составлять протоколы об административных правонарушениях?",
+                    answers: ["Только судья", "Полицейский, работник государственной инспекции или орган, уполномоченный контролировать административные правонарушения", "Только прокурор"],
+                    correct: 2,
+                },
+            ],
+        },
+    ],
+    "Гражданское право": [
+    ],
+};
+
+let selectedBranch = null;
+let currentTest = null;
+let currentQuestionIndex = 0;
+let score = 0;
+
+function selectBranch(branchName) {
+    selectedBranch = branchName;
+
+    // Скрываем блок с выбором ветки
+    const branchesElement = document.getElementById("branches");
+    branchesElement.style.opacity = "0";
+    branchesElement.style.zIndex = "-1";
+
+    setTimeout(() => {
+        branchesElement.style.display = "none";
+
+        document.getElementById("topics").style.display = "block";
+        document.getElementById("topics").style.zIndex = "1";
+
+        document.getElementById("selectedBranch").textContent = branchName;
+
+    }, 100);
+}
+
+
+function startTest(testName) {
+    const branchTests = tests[selectedBranch];
+    currentTest = branchTests.find((test) => test.name === testName);
+    if (!currentTest) {
+        alert("Тест не найден!");
+        return;
+    }
+    currentQuestionIndex = 0;
+    score = 0;
+
+    document.getElementById("topics").style.display = "none";
+    document.getElementById("test").style.display = "block";
+    showQuestion();
+}
+
+function showQuestion() {
+    const questionData = currentTest.questions[currentQuestionIndex];
+    if (!questionData) {
+        showResult();
+        return;
+    }
+
+    const questionElement = document.getElementById("question");
+    const answersElement = document.getElementById("answers");
+
+    questionElement.textContent = questionData.question;
+    answersElement.innerHTML = "";
+
+    questionData.answers.forEach((answer, index) => {
+        const button = document.createElement("button");
+        button.className = "branchBtn";
+        button.textContent = answer;
+        button.onclick = () => checkAnswer(index);
+        answersElement.appendChild(button);
+    });
+}
+
+function checkAnswer(selectedIndex) {
+    const currentQuestion = currentTest.questions[currentQuestionIndex];
+    if (selectedIndex === currentQuestion.correct) {
+        score++;
+    }
+    currentQuestionIndex++;
+    showQuestion();
+}
+
+function showResult() {
+    document.getElementById("question-section").style.display = "none";
+    document.getElementById("result-section").style.display = "block";
+
+    document.getElementById("score").textContent = `Вы правильно ответили на ${score} из ${currentTest.questions.length} вопросов.`;
+    document.getElementById("score").className = "scoreText";
+}
+
+function exitTest() {
+    document.getElementById("result-section").style.display = "none";
+    document.getElementById("test").style.display = "none";
+
+    const branchesElement = document.getElementById("branches");
+    branchesElement.style.display = "block";
+
+    branchesElement.style.opacity = "1";
+    branchesElement.style.zIndex = "1";
+
+    document.getElementById("selectedBranch").textContent = "";
+}
+
+function exitTopic() {
+    document.getElementById("topics").style.display = "none";
+
+    const branchesElement = document.getElementById("branches");
+    branchesElement.style.display = "block";
+
+    branchesElement.style.opacity = "1";
+    branchesElement.style.zIndex = "1";
+
+    document.getElementById("selectedBranch").textContent = "";
+}
+
 const socket = new WebSocket("ws://localhost:5180/ws");
 
 socket.onopen = function () {
@@ -49,6 +180,11 @@ function login() {
   const username = document.getElementById("username").value;
   const password = document.getElementById("password").value;
   socket.send(JSON.stringify({ action: "login", username, password }));
+  document.getElementById("app").style.boxShadow = "15px 15px 15px 0px rgba(94, 69, 29, 0.2)";
+  document.getElementById("app").style.height = "100%";
+  document.getElementById("app").style.width = "100%";
+  document.getElementById("app").style.maxWidth = "1000px";
+  document.body.style.overflow = "hidden";
 }
 
 function register() {
@@ -58,8 +194,16 @@ function register() {
 }
 
 function showLogin() {
-  document.getElementById("login").style.display = "block";
-  document.getElementById("register").style.display = "none";
+    document.getElementById("main").style.setProperty("display", "none", "important");
+    document.getElementById("app").style.height = "auto";
+    document.getElementById("app").style.width = "80%";
+    document.getElementById("app").style.maxWidth = "600px";
+    document.getElementById("username").value = "";
+    document.getElementById("password").value = "";
+    document.getElementById("login").style.display = "block";
+    document.getElementById("login").style.textAlign = "center";
+    document.getElementById("btn").style.alignItems = "center";
+    document.getElementById("register").style.display = "none";
 }
 
 function showRegister() {
@@ -93,6 +237,11 @@ function showMainPage() {
   document.getElementById("main").style.display = "block";
   document.getElementById("createLawBranch").style.display = "none";
   document.getElementById("createTest").style.display = "none";
+  document.getElementById("app").style.boxShadow = "15px 15px 15px 0px rgba(94, 69, 29, 0.2)";
+  document.getElementById("app").style.height = "100%";
+  document.getElementById("app").style.width = "100%";
+  document.getElementById("app").style.maxWidth = "1000px";
+  document.body.style.overflow = "hidden";
   getLawBranches();
 }
 

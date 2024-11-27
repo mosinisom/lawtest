@@ -7,29 +7,77 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div id="app">
-        <div id="login">
-            <h2>Login</h2>
-            <input type="text" id="username" placeholder="Username">
-            <input type="password" id="password" placeholder="Password">
-            <button onclick="login()">Login</button>
-            <button onclick="showRegister()">Register</button>
+    <div id="app" class="windowLogin">
+        <div id="login" class="windowLogin">
+            <p class="loginText">Авторизация</p>
+            <input type="text" id="username" placeholder="Введите логин..">
+            <input type="password" id="password" placeholder="Введите пароль..">
+            <div class="windowBtn" id="btn">
+                <button onclick="login()">Вход</button>
+                <button onclick="showRegister()">Регистрация</button>
+            </div>
         </div>
         <div id="register" style="display:none;">
-            <h2>Register</h2>
-            <input type="text" id="regUsername" placeholder="Username">
-            <input type="password" id="regPassword" placeholder="Password">
-            <button onclick="register()">Register</button>
-            <button onclick="showLogin()">Login</button>
+            <div class="windowLogin">
+                <p class="loginText">Регистрация</p>
+                <input type="text" id="regUsername" placeholder="Введите логин..">
+                <input type="password" id="regPassword" placeholder="Введите пароль..">
+                <div class="windowBtn">
+                    <button onclick="register()">Зарегистрироваться</button>
+                    <button onclick="showLogin()">Войти</button>
+                </div>
+            </div>
         </div>
         <div id="main" style="display:none;">
             <div class="controls">
                 <button onclick="showCreateLawBranchForm()">Create Law Branch</button>
                 <button onclick="showCreateTestForm()">Create Test</button>
+                <button onclick="showLogin()">Выйти</button>
             </div>
             <div class="content">
-                <h2>Law Branches</h2>
-                <div id="lawBranches"></div>
+                <div id="branches">
+                    <p class="contentText" id="contentText">Юридические отрасли:</p>
+                    <div class="branchs">
+                        <div class="branchsCol">
+                            <button onclick="selectBranch('Административное право')" class="branchBtn">Административное право</button>
+                            <button onclick="selectBranch('Гражданское право')" class="branchBtn">Гражданское право</button>
+                            <button onclick="selectBranch('Земельное право')" class="branchBtn">Земельное право</button>
+                            <button onclick="selectBranch('Земельное право')" class="branchBtn">Конституционное право</button>
+                            <button onclick="selectBranch('Земельное право')" class="branchBtn">Налоговое право</button>
+                            <button onclick="selectBranch('Земельное право')" class="branchBtn">Семейное право</button>
+                        </div>
+                        <div class="branchsCol">
+                            <button onclick="selectBranch('Таможенное право')" class="branchBtn">Таможенное право</button>
+                            <button onclick="selectBranch('Трудовое право')" class="branchBtn">Трудовое право</button>
+                            <button onclick="selectBranch('Уголовное право')" class="branchBtn">Уголовное право</button>
+                            <button onclick="selectBranch('Уголовное право')" class="branchBtn">Уголовно-исполнительное право</button>
+                            <button onclick="selectBranch('Уголовное право')" class="branchBtn">Финансовое право</button>
+                            <button onclick="selectBranch('Уголовное право')" class="branchBtn">Экологическое право</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="topics" class="topics" style="display: none;">
+                    <p class="contentText" id="selectedBranch"></p>
+                    <div class="topicBtn">
+                        <button onclick="startTest('Тест 1')" class="branchBtn">Тест 1</button>
+                        <button onclick="startTest('Тест 2')" class="branchBtn">Тест 2</button>
+                        <button onclick="startTest('Тест 3')" class="branchBtn">Тест 3</button>
+                    </div>
+                    <button id="exitButton" onclick="exitTopic()">Выйти из топика</button>
+                </div>
+
+                <div id="test" style="display: none;">
+                    <div id="question-section">
+                        <div id="question" class="question"></div>
+                        <div id="answers" class="answers"></div>
+                    </div>
+                    <div id="result-section" style="display: none;">
+                        <p class="contentText">Результат:</p>
+                        <p id="score"></p>
+                        <button onclick="exitTest()">Выйти</button>
+                    </div>
+                </div>
             </div>
         </div>
         <div id="testForm" style="display:none;">
