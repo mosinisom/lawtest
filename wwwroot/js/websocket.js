@@ -18,11 +18,27 @@ const tests = {
                     answers: ["Только судья", "Полицейский, работник государственной инспекции или орган, уполномоченный контролировать административные правонарушения", "Только прокурор"],
                     correct: 2,
                 },
-            ],
+            ]
         },
-    ],
-    "Гражданское право": [
-    ],
+
+        {
+            name: "Тест 2",
+            pairs: [
+                {
+                    term: "Административное право",
+                    definition: "Отрасль права, регулирующая общественные отношения в сфере государственного управления"
+                },
+                {
+                    term: "Административное правонарушение",
+                    definition: "Противоправное, виновное действие или бездействие, за которое установлена административная ответственность"
+                },
+                {
+                    term: "Административная ответственность",
+                    definition: "Вид юридической ответственности, которая выражается в применении уполномоченным органом или должностным лицом административного наказания к лицу, совершившему правонарушение"
+                }
+            ]
+        }
+    ]
 };
 
 let selectedBranch = null;
@@ -30,10 +46,13 @@ let currentTest = null;
 let currentQuestionIndex = 0;
 let score = 0;
 
+let selectedPairs = [];
+let currentSelection = {};
+let correctCount = 0;
+
 function selectBranch(branchName) {
     selectedBranch = branchName;
 
-    // Скрываем блок с выбором ветки
     const branchesElement = document.getElementById("branches");
     branchesElement.style.opacity = "0";
     branchesElement.style.zIndex = "-1";
@@ -49,7 +68,6 @@ function selectBranch(branchName) {
     }, 100);
 }
 
-
 function startTest(testName) {
     const branchTests = tests[selectedBranch];
     currentTest = branchTests.find((test) => test.name === testName);
@@ -57,12 +75,15 @@ function startTest(testName) {
         alert("Тест не найден!");
         return;
     }
-    currentQuestionIndex = 0;
-    score = 0;
-
-    document.getElementById("topics").style.display = "none";
-    document.getElementById("test").style.display = "block";
-    showQuestion();
+    if (currentTest.pairs) {
+        startMatchingTest(testName);
+    } else {
+        currentQuestionIndex = 0;
+        score = 0;
+        document.getElementById("topics").style.display = "none";
+        document.getElementById("test").style.display = "block";
+        showQuestion();
+    }
 }
 
 function showQuestion() {
@@ -107,12 +128,20 @@ function showResult() {
 function exitTest() {
     document.getElementById("result-section").style.display = "none";
     document.getElementById("test").style.display = "none";
+    document.getElementById("matching-test").style.display = "none";
 
     const branchesElement = document.getElementById("branches");
     branchesElement.style.display = "block";
 
     branchesElement.style.opacity = "1";
     branchesElement.style.zIndex = "1";
+
+    const resultElement = document.getElementById("matching-result");
+    resultElement.textContent = "";
+
+    selectedPairs = [];
+    currentSelection = {};
+    correctCount = 0;
 
     document.getElementById("selectedBranch").textContent = "";
 }
@@ -128,6 +157,78 @@ function exitTopic() {
 
     document.getElementById("selectedBranch").textContent = "";
 }
+
+function startMatchingTest(testName) {
+    const branchTests = tests[selectedBranch];
+    currentTest = branchTests.find((test) => test.name === testName);
+    if (!currentTest) {
+        alert("Тест не найден!");
+        return;
+    }
+
+    document.getElementById("topics").style.display = "none";
+    document.getElementById("matching-test").style.display = "block";
+
+    const termsContainer = document.getElementById("terms-container");
+    const definitionsContainer = document.getElementById("definitions-container");
+
+    termsContainer.innerHTML = "";
+    definitionsContainer.innerHTML = "";
+
+    currentTest.pairs.forEach((pair, termIndex) => {
+        const termButton = document.createElement("button");
+        termButton.textContent = pair.term;
+        termButton.className = "branchBtn";
+        termButton.dataset.index = termIndex;
+        termButton.onclick = () => selectTerm(termIndex);
+        termsContainer.appendChild(termButton);
+    });
+
+    currentTest.pairs.forEach((pair, defIndex) => {
+        const definitionButton = document.createElement("button");
+        definitionButton.textContent = pair.definition;
+        definitionButton.className = "branchBtn";
+        definitionButton.dataset.index = defIndex;
+        definitionButton.onclick = () => selectDefinition(defIndex);
+        definitionsContainer.appendChild(definitionButton);
+    });
+
+    for (let i = definitionsContainer.children.length; i >= 0; i--) {
+        definitionsContainer.appendChild(definitionsContainer.children[Math.random() * i | 0]);
+    }
+}
+
+function selectTerm(index) {
+    currentSelection.term = index;
+
+    const selectedButton = document.querySelector(`#terms-container button[data-index='${index}']`);
+    selectedButton.classList.add("branchBtnActive");
+}
+
+function selectDefinition(index) {
+    currentSelection.definition = index;
+
+    const selectedButton = document.querySelector(`#definitions-container button[data-index='${index}']`);
+    selectedButton.classList.add("branchBtnActive");
+
+    selectedPairs.push({ ...currentSelection });
+    currentSelection = {};
+}
+
+function checkMatching() {
+    correctCount = 0;
+    selectedPairs.forEach(pair => {
+        if (pair.term === pair.definition) {
+            correctCount++;
+        }
+    });
+
+    const resultElement = document.getElementById("matching-result");
+    resultElement.className = "scoreText";
+    resultElement.textContent = `Правильно соотнесено ${correctCount} из ${currentTest.pairs.length} пар.`;
+}
+
+document.getElementById("check-matching").addEventListener("click", checkMatching);
 
 const socket = new WebSocket("ws://localhost:5180/ws");
 

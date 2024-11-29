@@ -140,7 +140,6 @@ namespace lawtest.Migrations
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("AuthToken")
-                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<string>("PasswordHash")

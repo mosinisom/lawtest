@@ -359,6 +359,43 @@ button:hover {
     font-family: "Deledda";
 }
 
+.termsCont {
+    width: 100%;
+    height: 200px;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    margin: 20px;
+}
+
+.defCont {
+    width: 100%;
+    height: 200px;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    margin: 20px;
+}
+
+.branchBtnActive {
+    font-size: 20px;
+    font-family: "Deledda";
+    height: 100%;
+    max-height: 300px;
+    min-height: 60px;
+    width: 260px;
+    margin: 10px;
+    border: 0;
+    border-radius: 3px;
+    cursor: pointer;
+    background-color: rgba(161, 146, 124, 0.55);
+    padding: 5px;
+    background-color: #fff;
+    color: rgb(94, 69, 29);
+    transform: scale(1.01);
+    box-shadow: 0 0 15px 0 rgba(94, 69, 29, 0.3);
+}
+
 @font-face {
     font-family: "Brushboy";
     src: url("./fonts/Brushboy-Regular.otf") format("truetype");
