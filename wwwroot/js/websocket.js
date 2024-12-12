@@ -72,6 +72,25 @@ const tests = {
                     definition: "Вид юридической ответственности, которая выражается в применении уполномоченным органом или должностным лицом административного наказания к лицу, совершившему правонарушение"
                 }
             ]
+        },
+
+        {
+            name: "Тест 3",
+            type: "trueFalse",
+            statements: [
+                {
+                    statement: "Административное право регулирует только международные отношения.",
+                    correct: false,
+                },
+                {
+                    statement: "Административное наказание может быть назначено только судом.",
+                    correct: false,
+                },
+                {
+                    statement: "Административные правонарушения рассматриваются в Кодексе об административных правонарушениях.",
+                    correct: true,
+                }
+            ]
         }
     ],
 
@@ -966,7 +985,10 @@ function startTest(testName) {
         alert("Тест не найден!");
         return;
     }
-    if (currentTest.pairs) {
+
+    if (currentTest.type === "trueFalse") {
+        startTrueFalseTest(testName);
+    } else if (currentTest.pairs) {
         startMatchingTest(testName);
     } else {
         currentQuestionIndex = 0;
@@ -1117,6 +1139,77 @@ function checkMatching() {
     const resultElement = document.getElementById("matching-result");
     resultElement.className = "scoreText";
     resultElement.textContent = `Правильно соотнесено ${correctCount} из ${currentTest.pairs.length} пар.`;
+}
+
+function startTrueFalseTest(testName) {
+    const branchTests = tests[selectedBranch];
+    currentTest = branchTests.find((test) => test.name === testName);
+    if (!currentTest || currentTest.type !== "trueFalse") {
+        alert("Тест не найден!");
+        return;
+    }
+
+    currentQuestionIndex = 0;
+    score = 0;
+
+    document.getElementById("topics").style.display = "none";
+    document.getElementById("test").style.display = "block";
+    showTrueFalseQuestion();
+}
+
+function showTrueFalseQuestion() {
+    const questionData = currentTest.statements[currentQuestionIndex];
+    if (!questionData) {
+        showTrueFalseResult();
+        return;
+    }
+
+    const questionElement = document.getElementById("question");
+    const answersElement = document.getElementById("answers");
+
+    questionElement.textContent = questionData.statement;
+    answersElement.innerHTML = "";
+
+    const trueButton = document.createElement("button");
+    trueButton.className = "branchBtn";
+    trueButton.textContent = "Верно";
+    trueButton.onclick = () => checkTrueFalseAnswer(true);
+
+    const falseButton = document.createElement("button");
+    falseButton.className = "branchBtn";
+    falseButton.textContent = "Неверно";
+    falseButton.onclick = () => checkTrueFalseAnswer(false);
+
+    answersElement.appendChild(trueButton);
+    answersElement.appendChild(falseButton);
+
+    // Отображение промежуточного результата
+    const scoreElement = document.getElementById("score");
+    scoreElement.textContent = `Правильных ответов: ${score} из ${currentTest.statements.length}`;
+}
+
+function checkTrueFalseAnswer(selectedAnswer) {
+    const currentStatement = currentTest.statements[currentQuestionIndex];
+    if (selectedAnswer === currentStatement.correct) {
+        score++;
+    }
+    currentQuestionIndex++;
+
+    if (currentQuestionIndex < currentTest.statements.length) {
+        // Показать следующий вопрос
+        showTrueFalseQuestion();
+    } else {
+        // Показать финальный результат
+        showTrueFalseResult();
+    }
+}
+
+function showTrueFalseResult() {
+    document.getElementById("question-section").style.display = "none";
+    document.getElementById("result-section").style.display = "block";
+
+    document.getElementById("score").textContent = `Вы определили правильно ${score} из ${currentTest.statements.length} утверждений.`;
+    document.getElementById("score").className = "scoreText";
 }
 
 document.getElementById("check-matching").addEventListener("click", checkMatching);
