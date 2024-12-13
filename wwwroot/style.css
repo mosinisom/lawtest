@@ -284,7 +284,7 @@ button:hover {
 .contentText {
     font-family: Brushboy;
     margin-left: 0;
-    padding-top: 30px;
+    padding-top: 5px;
     font-size: 30px;
     color: rgb(94, 69, 29);
     width: 100%;
@@ -394,6 +394,14 @@ button:hover {
     color: rgb(94, 69, 29);
     transform: scale(1.01);
     box-shadow: 0 0 15px 0 rgba(94, 69, 29, 0.3);
+}
+
+#total-score-container {
+    margin-top: 20px;
+    font-size: 25px;
+    font-weight: bold;
+    color: #000000;
+    font-family: "Deledda";
 }
 
 @font-face {

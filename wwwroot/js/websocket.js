@@ -9,6 +9,8 @@ let selectedPairs = [];
 let currentSelection = {};
 let correctCount = 0;
 
+let totalScore = 0;
+
 function selectBranch(branchName) {
     selectedBranch = branchName;
 
@@ -97,6 +99,9 @@ function showResult() {
     document.getElementById("result-section").style.display = "block";
 
     document.getElementById("score").textContent = `Вы правильно ответили на ${score} из ${currentTest.questions.length} вопросов.`;
+
+    totalScore += score; // Обновление общего счета
+    document.getElementById("total-score").textContent = `Общее количество баллов: ${totalScore}`;
     document.getElementById("score").className = "scoreText";
 }
 
@@ -201,6 +206,9 @@ function checkMatching() {
     const resultElement = document.getElementById("matching-result");
     resultElement.className = "scoreText";
     resultElement.textContent = `Правильно соотнесено ${correctCount} из ${currentTest.pairs.length} пар.`;
+
+    totalScore += correctCount; // Обновление общего счета
+    document.getElementById("total-score").textContent = `Общий счет: ${totalScore}`;
 }
 
 function startTrueFalseTest(testName) {
@@ -271,6 +279,9 @@ function showTrueFalseResult() {
     document.getElementById("result-section").style.display = "block";
 
     document.getElementById("score").textContent = `Вы определили правильно ${score} из ${currentTest.statements.length} утверждений.`;
+
+    totalScore += score; // Обновление общего счета
+    document.getElementById("total-score").textContent = `Общий счет: ${totalScore}`;
     document.getElementById("score").className = "scoreText";
 }
 
@@ -835,7 +846,7 @@ function renderTestContent(questions) {
                 </div>
             `).join('');
         }
-        
+
         questionDiv.innerHTML = `
             <p class="question-text"><strong>Вопрос ${index + 1}:</strong> ${question.Text}</p>
             <div class="options-container">
