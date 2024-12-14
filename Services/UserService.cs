@@ -31,7 +31,7 @@ public class UserService : IUserService
         return user;
     }
 
-    public async Task<User> AuthenticateAsync(string username, string password)
+    public async Task<AuthResponse> AuthenticateAsync(string username, string password)
     {
         var user = await _context.Users.SingleOrDefaultAsync(u => u.Username == username);
 
@@ -40,7 +40,12 @@ public class UserService : IUserService
             throw new Exception("Invalid username or password");
         }
 
-        return user;
+        return new AuthResponse
+        {
+            Username = user.Username,
+            Role = user.Role,
+            AuthToken = user.AuthToken
+        };
     }
 
     private string HashPassword(string password)

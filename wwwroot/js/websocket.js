@@ -1,7 +1,297 @@
+let tests = {}
+
+let selectedBranch = null;
+let currentTest = null;
+let currentQuestionIndex = 0;
+let score = 0;
+
+let selectedPairs = [];
+let currentSelection = {};
+let correctCount = 0;
+
+let totalScore = 0;
+
+function selectBranch(branchName) {
+    selectedBranch = branchName;
+
+    const branchesElement = document.getElementById("branches");
+    branchesElement.style.opacity = "0";
+    branchesElement.style.zIndex = "-1";
+
+    setTimeout(() => {
+        branchesElement.style.display = "none";
+
+        document.getElementById("topics").style.display = "block";
+        document.getElementById("topics").style.zIndex = "1";
+
+        document.getElementById("selectedBranch").textContent = branchName;
+
+    }, 100);
+}
+
+async function loadTests() {
+  try {
+    const response = await fetch('/tests.json');
+    if (!response.ok) {
+      throw new Error('Не удалось загрузить тесты');
+    }
+    tests = await response.json();
+    console.log('Тесты успешно загружены');
+  } catch (error) {
+    console.error('Ошибка при загрузке тестов:', error);
+  }
+}
+
+function startTest(testName) {
+    const branchTests = tests[selectedBranch];
+    currentTest = branchTests.find((test) => test.name === testName);
+    if (!currentTest) {
+        alert("Тест не найден!");
+        return;
+    }
+
+    if (currentTest.type === "trueFalse") {
+        startTrueFalseTest(testName);
+    } else if (currentTest.pairs) {
+        startMatchingTest(testName);
+    } else {
+        currentQuestionIndex = 0;
+        score = 0;
+        document.getElementById("topics").style.display = "none";
+        document.getElementById("test").style.display = "block";
+        showQuestion();
+    }
+}
+
+function showQuestion() {
+    const questionData = currentTest.questions[currentQuestionIndex];
+    if (!questionData) {
+        showResult();
+        return;
+    }
+
+    const questionElement = document.getElementById("question");
+    const answersElement = document.getElementById("answers");
+
+    questionElement.textContent = questionData.question;
+    answersElement.innerHTML = "";
+
+    questionData.answers.forEach((answer, index) => {
+        const button = document.createElement("button");
+        button.className = "branchBtn";
+        button.textContent = answer;
+        button.onclick = () => checkAnswer(index);
+        answersElement.appendChild(button);
+    });
+}
+
+function checkAnswer(selectedIndex) {
+    const currentQuestion = currentTest.questions[currentQuestionIndex];
+    if (selectedIndex === currentQuestion.correct) {
+        score++;
+    }
+    currentQuestionIndex++;
+    showQuestion();
+}
+
+function showResult() {
+    document.getElementById("question-section").style.display = "none";
+    document.getElementById("result-section").style.display = "block";
+
+    document.getElementById("score").textContent = `Вы правильно ответили на ${score} из ${currentTest.questions.length} вопросов.`;
+
+    totalScore += score; // Обновление общего счета
+    document.getElementById("total-score").textContent = `Общее количество баллов: ${totalScore}`;
+    document.getElementById("score").className = "scoreText";
+}
+
+function exitTest() {
+    document.getElementById("result-section").style.display = "none";
+    document.getElementById("test").style.display = "none";
+    document.getElementById("matching-test").style.display = "none";
+
+    const branchesElement = document.getElementById("branches");
+    branchesElement.style.display = "block";
+
+    branchesElement.style.opacity = "1";
+    branchesElement.style.zIndex = "1";
+
+    const resultElement = document.getElementById("matching-result");
+    resultElement.textContent = "";
+
+    selectedPairs = [];
+    currentSelection = {};
+    correctCount = 0;
+
+    document.getElementById("selectedBranch").textContent = "";
+}
+
+function exitTopic() {
+    document.getElementById("topics").style.display = "none";
+
+    const branchesElement = document.getElementById("branches");
+    branchesElement.style.display = "block";
+
+    branchesElement.style.opacity = "1";
+    branchesElement.style.zIndex = "1";
+
+    document.getElementById("selectedBranch").textContent = "";
+}
+
+function startMatchingTest(testName) {
+    const branchTests = tests[selectedBranch];
+    currentTest = branchTests.find((test) => test.name === testName);
+    if (!currentTest) {
+        alert("Тест не найден!");
+        return;
+    }
+
+    document.getElementById("topics").style.display = "none";
+    document.getElementById("matching-test").style.display = "block";
+
+    const termsContainer = document.getElementById("terms-container");
+    const definitionsContainer = document.getElementById("definitions-container");
+
+    termsContainer.innerHTML = "";
+    definitionsContainer.innerHTML = "";
+
+    currentTest.pairs.forEach((pair, termIndex) => {
+        const termButton = document.createElement("button");
+        termButton.textContent = pair.term;
+        termButton.className = "branchBtn";
+        termButton.dataset.index = termIndex;
+        termButton.onclick = () => selectTerm(termIndex);
+        termsContainer.appendChild(termButton);
+    });
+
+    currentTest.pairs.forEach((pair, defIndex) => {
+        const definitionButton = document.createElement("button");
+        definitionButton.textContent = pair.definition;
+        definitionButton.className = "branchBtn";
+        definitionButton.dataset.index = defIndex;
+        definitionButton.onclick = () => selectDefinition(defIndex);
+        definitionsContainer.appendChild(definitionButton);
+    });
+
+    for (let i = definitionsContainer.children.length; i >= 0; i--) {
+        definitionsContainer.appendChild(definitionsContainer.children[Math.random() * i | 0]);
+    }
+}
+
+function selectTerm(index) {
+    currentSelection.term = index;
+
+    const selectedButton = document.querySelector(`#terms-container button[data-index='${index}']`);
+    selectedButton.classList.add("branchBtnActive");
+}
+
+function selectDefinition(index) {
+    currentSelection.definition = index;
+
+    const selectedButton = document.querySelector(`#definitions-container button[data-index='${index}']`);
+    selectedButton.classList.add("branchBtnActive");
+
+    selectedPairs.push({ ...currentSelection });
+    currentSelection = {};
+}
+
+function checkMatching() {
+    correctCount = 0;
+    selectedPairs.forEach(pair => {
+        if (pair.term === pair.definition) {
+            correctCount++;
+        }
+    });
+
+    const resultElement = document.getElementById("matching-result");
+    resultElement.className = "scoreText";
+    resultElement.textContent = `Правильно соотнесено ${correctCount} из ${currentTest.pairs.length} пар.`;
+
+    totalScore += correctCount; // Обновление общего счета
+    document.getElementById("total-score").textContent = `Общий счет: ${totalScore}`;
+}
+
+function startTrueFalseTest(testName) {
+    const branchTests = tests[selectedBranch];
+    currentTest = branchTests.find((test) => test.name === testName);
+    if (!currentTest || currentTest.type !== "trueFalse") {
+        alert("Тест не найден!");
+        return;
+    }
+
+    currentQuestionIndex = 0;
+    score = 0;
+
+    document.getElementById("topics").style.display = "none";
+    document.getElementById("test").style.display = "block";
+    showTrueFalseQuestion();
+}
+
+function showTrueFalseQuestion() {
+    const questionData = currentTest.statements[currentQuestionIndex];
+    if (!questionData) {
+        showTrueFalseResult();
+        return;
+    }
+
+    const questionElement = document.getElementById("question");
+    const answersElement = document.getElementById("answers");
+
+    questionElement.textContent = questionData.statement;
+    answersElement.innerHTML = "";
+
+    const trueButton = document.createElement("button");
+    trueButton.className = "branchBtn";
+    trueButton.textContent = "Верно";
+    trueButton.onclick = () => checkTrueFalseAnswer(true);
+
+    const falseButton = document.createElement("button");
+    falseButton.className = "branchBtn";
+    falseButton.textContent = "Неверно";
+    falseButton.onclick = () => checkTrueFalseAnswer(false);
+
+    answersElement.appendChild(trueButton);
+    answersElement.appendChild(falseButton);
+
+    // Отображение промежуточного результата
+    const scoreElement = document.getElementById("score");
+    scoreElement.textContent = `Правильных ответов: ${score} из ${currentTest.statements.length}`;
+}
+
+function checkTrueFalseAnswer(selectedAnswer) {
+    const currentStatement = currentTest.statements[currentQuestionIndex];
+    if (selectedAnswer === currentStatement.correct) {
+        score++;
+    }
+    currentQuestionIndex++;
+
+    if (currentQuestionIndex < currentTest.statements.length) {
+        // Показать следующий вопрос
+        showTrueFalseQuestion();
+    } else {
+        // Показать финальный результат
+        showTrueFalseResult();
+    }
+}
+
+function showTrueFalseResult() {
+    document.getElementById("question-section").style.display = "none";
+    document.getElementById("result-section").style.display = "block";
+
+    document.getElementById("score").textContent = `Вы определили правильно ${score} из ${currentTest.statements.length} утверждений.`;
+
+    totalScore += score; // Обновление общего счета
+    document.getElementById("total-score").textContent = `Общий счет: ${totalScore}`;
+    document.getElementById("score").className = "scoreText";
+}
+
+document.getElementById("check-matching").addEventListener("click", checkMatching);
+
 const socket = new WebSocket("ws://localhost:5180/ws");
 
-socket.onopen = function () {
+socket.onopen = async function () {
   console.log("WebSocket соединение установлено");
+  await loadTests();
   if (currentAuthToken) {
     showMainPage();
   }
@@ -49,6 +339,11 @@ function login() {
   const username = document.getElementById("username").value;
   const password = document.getElementById("password").value;
   socket.send(JSON.stringify({ action: "login", username, password }));
+  document.getElementById("app").style.boxShadow = "15px 15px 15px 0px rgba(94, 69, 29, 0.2)";
+  document.getElementById("app").style.height = "100%";
+  document.getElementById("app").style.width = "100%";
+  document.getElementById("app").style.maxWidth = "1000px";
+  document.body.style.overflow = "hidden";
 }
 
 function register() {
@@ -58,8 +353,16 @@ function register() {
 }
 
 function showLogin() {
-  document.getElementById("login").style.display = "block";
-  document.getElementById("register").style.display = "none";
+    document.getElementById("main").style.setProperty("display", "none", "important");
+    document.getElementById("app").style.height = "auto";
+    document.getElementById("app").style.width = "80%";
+    document.getElementById("app").style.maxWidth = "600px";
+    document.getElementById("username").value = "";
+    document.getElementById("password").value = "";
+    document.getElementById("login").style.display = "block";
+    document.getElementById("login").style.textAlign = "center";
+    document.getElementById("btn").style.alignItems = "center";
+    document.getElementById("register").style.display = "none";
 }
 
 function showRegister() {
@@ -71,10 +374,17 @@ function handleLogin(data) {
   if (data.status === "success") {
     currentAuthToken = data.token;
     localStorage.setItem('authToken', currentAuthToken);
+    const userRole = data.user.role;
+    localStorage.setItem('userRole', userRole);
+    console.log("Logged in as:", userRole);
     showMainPage();
   } else {
     alert(data.message);
   }
+}
+
+function isAdmin() {
+  return localStorage.getItem('userRole') === 'Admin';
 }
 
 function handleRegister(data) {
@@ -91,8 +401,16 @@ function showMainPage() {
   document.getElementById("login").style.display = "none";
   document.getElementById("register").style.display = "none";
   document.getElementById("main").style.display = "block";
-  document.getElementById("createLawBranch").style.display = "none";
-  document.getElementById("createTest").style.display = "none";
+
+  const isAdminUser = isAdmin();
+  document.getElementById("createLawBranch").style.display = isAdminUser ? "block" : "none";
+  document.getElementById("createTest").style.display = isAdminUser ? "block" : "none";
+
+  document.getElementById("app").style.boxShadow = "15px 15px 15px 0px rgba(94, 69, 29, 0.2)";
+  document.getElementById("app").style.height = "100%";
+  document.getElementById("app").style.width = "100%";
+  document.getElementById("app").style.maxWidth = "1000px";
+  document.body.style.overflow = "hidden";
   getLawBranches();
 }
 
@@ -528,7 +846,7 @@ function renderTestContent(questions) {
                 </div>
             `).join('');
         }
-        
+
         questionDiv.innerHTML = `
             <p class="question-text"><strong>Вопрос ${index + 1}:</strong> ${question.Text}</p>
             <div class="options-container">

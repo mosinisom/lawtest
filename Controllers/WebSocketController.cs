@@ -383,7 +383,11 @@ public class WebSocketController : ControllerBase
       {
         action = "login",
         status = "success",
-        user = user,
+        user = new
+        {
+          username = user.Username,
+          role = user.Role.ToString()
+        },
         token = user.AuthToken
       });
     }
